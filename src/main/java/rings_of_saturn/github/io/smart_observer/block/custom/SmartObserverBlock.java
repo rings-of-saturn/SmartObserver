@@ -10,6 +10,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
@@ -31,14 +33,17 @@ import static net.minecraft.state.property.Properties.FACING;
 import static net.minecraft.state.property.Properties.POWERED;
 
 public class SmartObserverBlock extends BlockWithEntity implements BlockEntityProvider {
+
+    public static final BooleanProperty TOGGLED = BooleanProperty.of("toggled");
+
     public SmartObserverBlock(AbstractBlock.Settings settings) {
         super(settings);
-        this.setDefaultState(this.stateManager.getDefaultState().with(FACING, Direction.SOUTH).with(POWERED, false));
+        this.setDefaultState(this.stateManager.getDefaultState().with(FACING, Direction.SOUTH).with(POWERED, false).with(TOGGLED, false));
     }
     public static final MapCodec<SmartObserverBlock> CODEC = SmartObserverBlock.createCodec(SmartObserverBlock::new);
 
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(FACING, POWERED);
+        builder.add(FACING, POWERED, TOGGLED);
     }
 
     protected BlockState rotate(BlockState state, BlockRotation rotation) {
@@ -65,8 +70,8 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
     }
 
     protected void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        if (state.get(POWERED)) {
-            world.setBlockState(pos, state.with(POWERED, false), 2);
+        if (state.get(POWERED) && !state.get(TOGGLED)) {
+                world.setBlockState(pos, state.with(POWERED, false), 2);
         } else {
             world.setBlockState(pos, state.with(POWERED, true), 2);
             world.scheduleBlockTick(pos, this, 2);
@@ -157,10 +162,16 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
                         blockEntity.setStack(0, block.getDefaultStack());
                         blockEntity.markDirty();
                         world.updateListeners(pos, state, state, 0);
+                        player.sendMessage(Text.of("added"));
                     }
                 } catch (ClassCastException ignored) {}
             } else {
-                blockEntity.removeStack(0);
+                if(player.isSneaking()){
+                    world.setBlockState(pos, state.with(TOGGLED, !world.getBlockState(pos).get(TOGGLED)));
+                } else {
+                    player.sendMessage(Text.of("cleared"));
+                    blockEntity.removeStack(0);
+                }
                 blockEntity.markDirty();
                 world.updateListeners(pos, state, state, 0);
             }

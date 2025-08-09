@@ -1,0 +1,6 @@
+{
+  "parent": "smart_observer:block/smart_observer",
+  "textures": {
+    "side": "smart_observer:block/smart_observer_side_toggled"
+  }
+}
