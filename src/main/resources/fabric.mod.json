@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "smart_observer",
+  "version": "${version}",
+  "name": "Smart Observer",
+  "description": "Adds a new observer that detects when theres a certain block in front of it!",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "accessWidener" : "smart_observer.accesswidener",
+  "icon": "assets/smart_observer/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-datagen": [
+      "rings_of_saturn.github.io.smart_observer.client.SmartObserverDataGenerator"
+    ],
+    "client": [
+      "rings_of_saturn.github.io.smart_observer.client.SmartObserverClient"
+    ],
+    "main": [
+      "rings_of_saturn.github.io.smart_observer.SmartObserver"
+    ]
+  },
+  "mixins": [
+    "smart_observer.mixins.json",
+    {
+      "config": "smart_observer.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}

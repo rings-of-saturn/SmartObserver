@@ -1,0 +1,14 @@
+package rings_of_saturn.github.io.smart_observer.client;
+
+import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
+import rings_of_saturn.github.io.smart_observer.client.datagen.SmartObserverModelProvider;
+
+public class SmartObserverDataGenerator implements DataGeneratorEntrypoint {
+
+    @Override
+    public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
+        FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
+        pack.addProvider(SmartObserverModelProvider::new);
+    }
+}
