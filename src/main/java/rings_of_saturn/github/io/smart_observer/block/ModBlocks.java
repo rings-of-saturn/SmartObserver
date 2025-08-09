@@ -2,6 +2,7 @@ package rings_of_saturn.github.io.smart_observer.block;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.block.*;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
@@ -25,7 +26,7 @@ public class ModBlocks {
     }
 
     public static final Block SMART_OBSERVER = createBlock(new SmartObserverBlock(
-                    AbstractBlock.Settings.copy(Blocks.OBSERVER).mapColor(MapColor.DEEPSLATE_GRAY)
+                    AbstractBlock.Settings.copy(Blocks.OBSERVER).mapColor(MapColor.DEEPSLATE_GRAY).pistonBehavior(PistonBehavior.BLOCK)
             ), "smart_observer", MOD_ID
     );
 
