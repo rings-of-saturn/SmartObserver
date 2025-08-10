@@ -70,6 +70,10 @@ tasks.withType(JavaCompile).configureEach {
     }
 }
 
+rootProject.tasks.named("jar") {
+    duplicatesStrategy = 'include'
+}
+
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     if (JavaVersion.current() < javaVersion) {
