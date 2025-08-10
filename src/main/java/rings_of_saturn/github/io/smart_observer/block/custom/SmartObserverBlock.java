@@ -66,13 +66,28 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
     }
 
     protected void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        if (state.get(POWERED) && !state.get(TOGGLED)) {
-                world.setBlockState(pos, state.with(POWERED, false), 2);
+        if (state.get(POWERED)) {
+            world.setBlockState(pos, state.with(POWERED, false), 2);
         } else {
             world.setBlockState(pos, state.with(POWERED, true), 2);
             world.scheduleBlockTick(pos, this, 2);
         }
-
+        if(state.get(TOGGLED)) {
+            if (world.getBlockEntity(pos) instanceof SmartObserverBlockEntity blockEntity && !world.isClient()) {
+                if (blockEntity.getStack(0).getItem() != Items.AIR) {
+                    try {
+                        BlockItem block = (BlockItem) blockEntity.getStack(0).getItem();
+                        if(world.getBlockState(pos.offset(state.get(FACING))).getBlock() == block.getBlock()){
+                            world.setBlockState(pos, state.with(POWERED, true), 2);
+                            this.scheduleTick(world, pos);
+                        } else {
+                            world.setBlockState(pos, state.with(POWERED, false), 2);
+                        }
+                    } catch (ClassCastException ignored) {
+                    }
+                }
+            }
+        }
         this.updateNeighbors(world, pos, state);
     }
 
@@ -84,6 +99,7 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
                         BlockItem block = (BlockItem) blockEntity.getStack(0).getItem();
                         if (block.getBlock() == neighborState.getBlock()) {
                             this.scheduleTick(world, pos);
+
                         }
                     } catch (ClassCastException ignored) {
                     }
@@ -139,27 +155,29 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (world.getBlockEntity(pos) instanceof SmartObserverBlockEntity blockEntity && !world.isClient) {
-            if (player.getStackInHand(player.getActiveHand()).getItem() != ModBlocks.EMPTY) {
+            if (!player.getStackInHand(player.getActiveHand()).isEmpty()) {
                 try {
                     BlockItem block = (BlockItem) player.getStackInHand(player.getActiveHand()).getItem();
                     if (block.getBlock() != null) {
                         blockEntity.setStack(0, block.getDefaultStack());
                         player.sendMessage(Text.of("added"));
+                        getStateForNeighborUpdate(state, state.get(FACING), world.getBlockState(pos.offset(state.get(FACING))), world, pos, pos.offset(state.get(FACING)));
                     }
                 } catch (ClassCastException ignored) {}
             } else {
                 if (player.isSneaking()) {
                     world.setBlockState(pos, state.with(TOGGLED, !world.getBlockState(pos).get(TOGGLED)));
-                } else if (!blockEntity.getStack(0).isEmpty()) {
+                    getStateForNeighborUpdate(state, state.get(FACING), world.getBlockState(pos.offset(state.get(FACING))), world, pos, pos.offset(state.get(FACING)));
+                } else if (blockEntity.getStack(0).getItem() != ModBlocks.EMPTY) {
                     blockEntity.setStack(0, ModBlocks.EMPTY.getDefaultStack());
                     player.sendMessage(Text.of("cleared"));
                 }
             }
             blockEntity.markDirty();
             world.updateListeners(pos, state, state, 0);
-            return ActionResult.SUCCESS_NO_ITEM_USED;
+            world.updateNeighbor(pos, ModBlocks.SMART_OBSERVER, pos);
         }
-        return ActionResult.PASS;
+        return ActionResult.SUCCESS_NO_ITEM_USED;
     }
 
     @Override
