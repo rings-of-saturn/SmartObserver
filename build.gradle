@@ -71,7 +71,7 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 rootProject.tasks.named("jar") {
-    duplicatesStrategy = 'include'
+    duplicatesStrategy = 'exclude'
 }
 
 java {
