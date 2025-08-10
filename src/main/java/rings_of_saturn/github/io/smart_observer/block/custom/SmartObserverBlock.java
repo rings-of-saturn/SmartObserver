@@ -10,7 +10,6 @@ import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
@@ -21,6 +20,9 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
+import net.minecraft.world.block.WireOrientation;
+import net.minecraft.world.tick.ScheduledTickView;
 import org.jetbrains.annotations.Nullable;
 import rings_of_saturn.github.io.smart_observer.block.ModBlocks;
 import rings_of_saturn.github.io.smart_observer.block.entity.SmartObserverBlockEntity;
@@ -91,14 +93,15 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
         this.updateNeighbors(world, pos, state);
     }
 
-    protected BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
+    @Override
+    protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
         if (state.get(FACING) == direction && !(Boolean)state.get(POWERED)) {
             if (world.getBlockEntity(pos) instanceof SmartObserverBlockEntity blockEntity && !world.isClient()) {
                 if (blockEntity.getStack(0).getItem() != Items.AIR) {
                     try {
                         BlockItem block = (BlockItem) blockEntity.getStack(0).getItem();
                         if (block.getBlock() == neighborState.getBlock()) {
-                            this.scheduleTick(world, pos);
+                            this.scheduleTick((WorldAccess) world, pos);
 
                         }
                     } catch (ClassCastException ignored) {
@@ -107,7 +110,7 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
             }
         }
 
-        return super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+        return super.getStateForNeighborUpdate(state, world, tickView, pos, direction, neighborPos, neighborState, random);
     }
 
     private void scheduleTick(WorldAccess world, BlockPos pos) {
@@ -120,8 +123,8 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
     protected void updateNeighbors(World world, BlockPos pos, BlockState state) {
         Direction direction = state.get(FACING);
         BlockPos blockPos = pos.offset(direction.getOpposite());
-        world.updateNeighbor(blockPos, this, pos);
-        world.updateNeighborsExcept(blockPos, this, direction);
+        world.updateNeighbors(blockPos, this);
+        world.updateNeighborsExcept(blockPos, this, direction, WireOrientation.random(world.random));
     }
 
     @Override
@@ -160,29 +163,27 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
                     BlockItem block = (BlockItem) player.getStackInHand(player.getActiveHand()).getItem();
                     if (block.getBlock() != null) {
                         blockEntity.setStack(0, block.getDefaultStack());
-                        player.sendMessage(Text.of("added"));
-                        getStateForNeighborUpdate(state, state.get(FACING), world.getBlockState(pos.offset(state.get(FACING))), world, pos, pos.offset(state.get(FACING)));
+                        getStateForNeighborUpdate(state, world, world, pos, state.get(FACING), pos.offset(state.get(FACING)), world.getBlockState(pos.offset(state.get(FACING))), world.getRandom());
                     }
                 } catch (ClassCastException ignored) {}
             } else {
                 if (player.isSneaking()) {
                     world.setBlockState(pos, state.with(TOGGLED, !world.getBlockState(pos).get(TOGGLED)));
-                    getStateForNeighborUpdate(state, state.get(FACING), world.getBlockState(pos.offset(state.get(FACING))), world, pos, pos.offset(state.get(FACING)));
+                    getStateForNeighborUpdate(state, world, world, pos, state.get(FACING), pos.offset(state.get(FACING)), world.getBlockState(pos.offset(state.get(FACING))), world.getRandom());
                 } else if (blockEntity.getStack(0).getItem() != ModBlocks.EMPTY) {
                     blockEntity.setStack(0, ModBlocks.EMPTY.getDefaultStack());
-                    player.sendMessage(Text.of("cleared"));
                 }
             }
             blockEntity.markDirty();
             world.updateListeners(pos, state, state, 0);
-            world.updateNeighbor(pos, ModBlocks.SMART_OBSERVER, pos);
+            world.updateNeighbors(pos, ModBlocks.SMART_OBSERVER);
         }
-        return ActionResult.SUCCESS_NO_ITEM_USED;
+        return ActionResult.SUCCESS;
     }
 
     @Override
-    protected void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-        if (!state.isOf(newState.getBlock())) {
+    protected void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
+        if (!state.isOf(world.getBlockState(pos).getBlock())) {
             if (!world.isClient && state.get(POWERED) && world.getBlockTickScheduler().isQueued(pos, this)) {
                 this.updateNeighbors(world, pos, state.with(POWERED, false));
             }
@@ -194,7 +195,7 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
                 blockEntity.markRemoved();
             }
         }
-        super.onStateReplaced(state, world, pos, newState, moved);
+        super.onStateReplaced(state, world, pos, moved);
     }
 
     public BlockState getPlacementState(ItemPlacementContext ctx) {

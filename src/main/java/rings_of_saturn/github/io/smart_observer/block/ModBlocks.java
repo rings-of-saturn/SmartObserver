@@ -8,6 +8,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import rings_of_saturn.github.io.smart_observer.block.custom.SmartObserverBlock;
 
@@ -20,13 +22,17 @@ public class ModBlocks {
                 new BlockItem(block, new Item.Settings()));
     }
 
+    public static RegistryKey<Block> getBlockKey(String name, String MOD_ID){
+        return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, name));
+    }
+
     public static Block createBlock(Block block, String name, String MOD_ID){
         createBlockItem(block, name, MOD_ID);
         return Registry.register(Registries.BLOCK, Identifier.of(MOD_ID, name), block);
     }
 
     public static final Block SMART_OBSERVER = createBlock(new SmartObserverBlock(
-                    AbstractBlock.Settings.copy(Blocks.OBSERVER).mapColor(MapColor.DEEPSLATE_GRAY).pistonBehavior(PistonBehavior.BLOCK)
+                    AbstractBlock.Settings.copy(Blocks.OBSERVER).mapColor(MapColor.DEEPSLATE_GRAY).pistonBehavior(PistonBehavior.BLOCK).registryKey(getBlockKey("smart_observer", MOD_ID))
             ), "smart_observer", MOD_ID
     );
 

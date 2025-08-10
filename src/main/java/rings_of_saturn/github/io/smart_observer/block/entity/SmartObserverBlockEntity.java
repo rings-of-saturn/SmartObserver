@@ -9,6 +9,8 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
@@ -27,9 +29,9 @@ public class SmartObserverBlockEntity extends BlockEntity implements Implemented
     }
 
     @Override
-    protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        Inventories.readNbt(nbt, inventory, registryLookup);
-        super.readNbt(nbt, registryLookup);
+    protected void readData(ReadView view) {
+        Inventories.readData(view, inventory);
+        super.readData(view);
     }
 
     @Override
@@ -38,9 +40,9 @@ public class SmartObserverBlockEntity extends BlockEntity implements Implemented
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        Inventories.writeNbt(nbt, inventory, registryLookup);
-        super.writeNbt(nbt, registryLookup);
+    protected void writeData(WriteView view) {
+        Inventories.writeData(view, inventory);
+        super.writeData(view);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package rings_of_saturn.github.io.smart_observer.block.entity;
 
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -16,7 +17,7 @@ public class ModBlockEntities {
 
     public static final BlockEntityType<SmartObserverBlockEntity> SMART_OBSERVER = register(
             "smart_observer",
-            BlockEntityType.Builder.create(SmartObserverBlockEntity::new, ModBlocks.SMART_OBSERVER).build()
+            FabricBlockEntityTypeBuilder.create(SmartObserverBlockEntity::new, ModBlocks.SMART_OBSERVER).build()
     );
 
     public static void registerBlockEntities(){
