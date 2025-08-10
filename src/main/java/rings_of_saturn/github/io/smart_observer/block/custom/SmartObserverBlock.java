@@ -10,7 +10,6 @@ import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
@@ -160,7 +159,6 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
                     BlockItem block = (BlockItem) player.getStackInHand(player.getActiveHand()).getItem();
                     if (block.getBlock() != null) {
                         blockEntity.setStack(0, block.getDefaultStack());
-                        player.sendMessage(Text.of("added"));
                         getStateForNeighborUpdate(state, state.get(FACING), world.getBlockState(pos.offset(state.get(FACING))), world, pos, pos.offset(state.get(FACING)));
                     }
                 } catch (ClassCastException ignored) {}
@@ -170,7 +168,6 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
                     getStateForNeighborUpdate(state, state.get(FACING), world.getBlockState(pos.offset(state.get(FACING))), world, pos, pos.offset(state.get(FACING)));
                 } else if (blockEntity.getStack(0).getItem() != ModBlocks.EMPTY) {
                     blockEntity.setStack(0, ModBlocks.EMPTY.getDefaultStack());
-                    player.sendMessage(Text.of("cleared"));
                 }
             }
             blockEntity.markDirty();
