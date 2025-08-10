@@ -19,11 +19,15 @@ import static rings_of_saturn.github.io.smart_observer.SmartObserver.MOD_ID;
 public class ModBlocks {
     public static Item createBlockItem(Block block, String name, String MOD_ID){
         return Registry.register(Registries.ITEM, Identifier.of(MOD_ID, name),
-                new BlockItem(block, new Item.Settings()));
+                new BlockItem(block, new Item.Settings().registryKey(getItemKey(name, MOD_ID))));
     }
 
     public static RegistryKey<Block> getBlockKey(String name, String MOD_ID){
         return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(MOD_ID, name));
+    }
+
+    public static RegistryKey<Item> getItemKey(String name, String MOD_ID){
+        return RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, name));
     }
 
     public static Block createBlock(Block block, String name, String MOD_ID){
