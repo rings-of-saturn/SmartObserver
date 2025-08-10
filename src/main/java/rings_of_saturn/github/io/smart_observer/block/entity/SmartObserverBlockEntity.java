@@ -12,10 +12,11 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
+import rings_of_saturn.github.io.smart_observer.block.ModBlocks;
 import rings_of_saturn.github.io.smart_observer.block.entity.inventory.ImplementedInventory;
 
 public class SmartObserverBlockEntity extends BlockEntity implements ImplementedInventory {
-    public final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(1, ItemStack.EMPTY);
+    public final DefaultedList<ItemStack> inventory = DefaultedList.ofSize(1, ModBlocks.EMPTY.getDefaultStack());
     public SmartObserverBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SMART_OBSERVER, pos, state);
     }

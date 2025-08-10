@@ -8,7 +8,6 @@ import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.Items;
 import net.minecraft.state.property.Properties;
 import rings_of_saturn.github.io.smart_observer.block.ModBlocks;
 import rings_of_saturn.github.io.smart_observer.block.entity.SmartObserverBlockEntity;
@@ -18,7 +17,7 @@ public class SmartObserverBlockEntityRenderer implements BlockEntityRenderer<Sma
 
     @Override
     public void render(SmartObserverBlockEntity blockEntity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
-        if(blockEntity.getStack(0).getItem() != Items.AIR && blockEntity.getWorld().getBlockState(blockEntity.getPos()).isOf(ModBlocks.SMART_OBSERVER)) {
+        if(blockEntity.getStack(0).getItem() != ModBlocks.EMPTY && blockEntity.getWorld().getBlockState(blockEntity.getPos()).isOf(ModBlocks.SMART_OBSERVER)) {
             matrices.push();
 
             switch (blockEntity.getWorld().getBlockState(blockEntity.getPos()).get(Properties.FACING)){
