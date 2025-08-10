@@ -15,7 +15,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
-import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -23,11 +22,9 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
-import net.minecraft.world.explosion.Explosion;
 import org.jetbrains.annotations.Nullable;
+import rings_of_saturn.github.io.smart_observer.block.ModBlocks;
 import rings_of_saturn.github.io.smart_observer.block.entity.SmartObserverBlockEntity;
-
-import java.util.function.BiConsumer;
 
 import static net.minecraft.state.property.Properties.FACING;
 import static net.minecraft.state.property.Properties.POWERED;
@@ -141,40 +138,26 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
     }
 
     @Override
-    public void onBroken(WorldAccess world, BlockPos pos, BlockState state) {
-        if(state.getBlock() != world.getBlockState(pos).getBlock()){
-            BlockEntity blockEntity = world.getBlockEntity(pos);
-            if(blockEntity instanceof SmartObserverBlockEntity){
-                world.updateNeighbors(pos, this);
-                blockEntity.markRemoved();
-            }
-        }
-        super.onBroken(world, pos, state);
-    }
-
-    @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if(world.getBlockEntity(pos) instanceof SmartObserverBlockEntity blockEntity && !world.isClient){
-            if(blockEntity.getStack(0).isEmpty() && player.getStackInHand(player.getActiveHand()).getItem() != Items.AIR) {
+        if (world.getBlockEntity(pos) instanceof SmartObserverBlockEntity blockEntity && !world.isClient) {
+            if (player.getStackInHand(player.getActiveHand()).getItem() != ModBlocks.EMPTY) {
                 try {
                     BlockItem block = (BlockItem) player.getStackInHand(player.getActiveHand()).getItem();
                     if (block.getBlock() != null) {
                         blockEntity.setStack(0, block.getDefaultStack());
-                        blockEntity.markDirty();
-                        world.updateListeners(pos, state, state, 0);
                         player.sendMessage(Text.of("added"));
                     }
                 } catch (ClassCastException ignored) {}
             } else {
-                if(player.isSneaking()){
+                if (player.isSneaking()) {
                     world.setBlockState(pos, state.with(TOGGLED, !world.getBlockState(pos).get(TOGGLED)));
-                } else {
+                } else if (!blockEntity.getStack(0).isEmpty()) {
+                    blockEntity.setStack(0, ModBlocks.EMPTY.getDefaultStack());
                     player.sendMessage(Text.of("cleared"));
-                    blockEntity.removeStack(0);
                 }
-                blockEntity.markDirty();
-                world.updateListeners(pos, state, state, 0);
             }
+            blockEntity.markDirty();
+            world.updateListeners(pos, state, state, 0);
             return ActionResult.SUCCESS_NO_ITEM_USED;
         }
         return ActionResult.PASS;
@@ -187,6 +170,14 @@ public class SmartObserverBlock extends BlockWithEntity implements BlockEntityPr
                 this.updateNeighbors(world, pos, state.with(POWERED, false));
             }
         }
+        if(state.getBlock() != world.getBlockState(pos).getBlock()){
+            BlockEntity blockEntity = world.getBlockEntity(pos);
+            if(blockEntity instanceof SmartObserverBlockEntity){
+                world.updateComparators(pos, this);
+                blockEntity.markRemoved();
+            }
+        }
+        super.onStateReplaced(state, world, pos, newState, moved);
     }
 
     public BlockState getPlacementState(ItemPlacementContext ctx) {
